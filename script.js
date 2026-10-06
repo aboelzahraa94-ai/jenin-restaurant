@@ -108,6 +108,21 @@ function updateRestaurantInfo() {
 
 
     /* =========================
+       HERO BADGE
+    ========================= */
+
+    const heroBadge =
+        document.getElementById("heroBadgeText");
+
+    if (heroBadge) {
+
+        heroBadge.textContent =
+            restaurant.hero_badge_text ||
+            "اللمة عنا غير";
+
+    }
+  
+    /* =========================
        HERO LOCATION
     ========================= */
 

@@ -607,6 +607,11 @@ async function loadRestaurantSettings() {
     ).value =
         data.description || "";
 
+  document.getElementById(
+    "heroBadgeText"
+).value =
+    data.hero_badge_text || "";
+  
 
     document.getElementById(
         "restaurantArea"
@@ -690,6 +695,11 @@ async function saveRestaurantSettings() {
                 "restaurantDescription"
             ).value.trim() || null,
 
+      hero_badge_text:
+    document.getElementById(
+        "heroBadgeText"
+    ).value.trim() || null,
+      
         area:
             document.getElementById(
                 "restaurantArea"
