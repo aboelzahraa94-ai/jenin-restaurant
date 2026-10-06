@@ -233,32 +233,35 @@ function openCategoryModal() {
                         "
                     >
 
-                        <button
-                            onclick="editCategory(${category.id})"
-                            style="
-                                padding:8px 12px;
-                                border:0;
-                                border-radius:8px;
-                                background:#2c2924;
-                                color:#f1d58a;
-                                cursor:pointer;
-                            "
-                        >
-                            ✏️
-                        </button>
+                        
+                            <button
+    data-action="edit-category"
+    data-id="${category.id}"
+    style="
+        padding:8px 12px;
+        border:0;
+        border-radius:8px;
+        background:#2c2924;
+        color:#f1d58a;
+        cursor:pointer;
+    "
+>
+    ✏️
+</button>
 
 
-                        <button
-                            onclick="deleteCategory(${category.id})"
-                            style="
-                                padding:8px 12px;
-                                border:0;
-                                border-radius:8px;
-                                background:#3a1917;
-                                color:#ff8b83;
-                                cursor:pointer;
-                            "
-                        >
+<button
+    data-action="delete-category"
+    data-id="${category.id}"
+    style="
+        padding:8px 12px;
+        border:0;
+        border-radius:8px;
+        background:#3a1917;
+        color:#ff8b83;
+        cursor:pointer;
+    "
+>
                             🗑️
                         </button>
 
@@ -510,6 +513,24 @@ function openCategoryModal() {
             "click",
             openCategoryModal
         );
+
+document.getElementById("categoriesList").addEventListener("click", function (e) {
+
+    const button = e.target.closest("button");
+
+    if (!button) return;
+
+    const id = button.dataset.id;
+
+    if (button.dataset.action === "edit-category") {
+        editCategory(Number(id));
+    }
+
+    if (button.dataset.action === "delete-category") {
+        deleteCategory(Number(id));
+    }
+
+});
 
 
         document.getElementById(
@@ -901,12 +922,9 @@ async function loadGalleryAdmin() {
 
                     <button
                         type="button"
-                        onclick="
-                            toggleGalleryImage(
-                                ${image.id},
-                                ${image.is_active}
-                            )
-                        "
+                      data-action="toggle-gallery"
+data-id="${image.id}"
+data-active="${image.is_active}"
                         class="admin-btn"
                     >
                         ${
@@ -919,11 +937,8 @@ async function loadGalleryAdmin() {
 
                     <button
                         type="button"
-                        onclick="
-                            deleteGalleryImage(
-                                ${image.id}
-                            )
-                        "
+                        data-action="delete-gallery"
+data-id="${image.id}"
                         class="admin-btn"
                         style="
                             background:#8b2d2d;
@@ -1456,7 +1471,8 @@ function renderProducts() {
             ">
 
                 <button
-                    onclick="editProduct(${product.id})"
+                    data-action="edit-product"
+data-id="${product.id}"
                     style="
                         padding:8px 12px;
                         border:0;
@@ -1471,7 +1487,8 @@ function renderProducts() {
 
 
                 <button
-                    onclick="deleteProduct(${product.id})"
+                    data-action="delete-product"
+data-id="${product.id}"
                     style="
                         padding:8px 12px;
                         border:0;
@@ -2216,6 +2233,37 @@ if (productImageFile) {
     await loadProducts();
 
 }
+
+// تشغيل أزرار الجاليري والمنتجات بدون onclick
+document.addEventListener("click", function (e) {
+
+    const button = e.target.closest("button");
+
+    if (!button) return;
+
+    const action = button.dataset.action;
+    const id = Number(button.dataset.id);
+
+    if (action === "toggle-gallery") {
+        toggleGalleryImage(
+            id,
+            button.dataset.active === "true"
+        );
+    }
+
+    if (action === "delete-gallery") {
+        deleteGalleryImage(id);
+    }
+
+    if (action === "edit-product") {
+        editProduct(id);
+    }
+
+    if (action === "delete-product") {
+        deleteProduct(id);
+    }
+
+});
 
 initAdminDashboard();
       
