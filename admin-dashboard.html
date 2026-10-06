@@ -836,21 +836,23 @@
     </div>
 
 
-    <div class="admin-form-grid">
+<div class="admin-form-grid">
 
-        <div class="admin-form-group">
+    <div class="admin-form-group">
 
-            <label>
-                رابط الصورة
-            </label>
+        <label>
+            صورة من الجهاز
+        </label>
 
-            <input
-                type="text"
-                id="galleryImageUrl"
-                placeholder="https://..."
-            >
+        <input
+            type="file"
+            id="galleryImageFile"
+            accept="image/*"
+        >
 
-        </div>
+    </div>
+
+</div>
 
 
         <div class="admin-form-group">
@@ -1868,7 +1870,7 @@ async function addGalleryImage() {
 
     const imageInput =
         document.getElementById(
-            "galleryImageUrl"
+            "galleryImageFile"
         );
 
     const titleInput =
@@ -1882,17 +1884,17 @@ async function addGalleryImage() {
         );
 
 
-    const imageUrl =
-        imageInput.value.trim();
+    const file =
+        imageInput.files[0];
 
     const title =
         titleInput.value.trim();
 
 
-    if (!imageUrl) {
+    if (!file) {
 
         message.textContent =
-            "⚠️ أدخل رابط الصورة أولًا";
+            "⚠️ اختر صورة أولًا";
 
         message.style.color =
             "#ff7777";
@@ -1914,66 +1916,140 @@ async function addGalleryImage() {
 
 
     message.textContent =
-        "جاري إضافة الصورة...";
+        "⏳ جاري رفع الصورة...";
 
     message.style.color =
         "#f1d58a";
 
 
-    const {
-        error
-    } = await supabaseClient
-        .from("gallery")
-        .insert([{
+    try {
 
-            restaurant_id:
-                currentRestaurant.id,
+        const fileExtension =
+            file.name.split(".").pop();
 
-            image_url:
-                imageUrl,
-
-            title:
-                title || null,
-
-            sort_order:
-                0,
-
-            is_active:
-                true
-
-        }]);
+        const fileName =
+            `${currentRestaurant.id}_${Date.now()}.${fileExtension}`;
 
 
-    if (error) {
+        const filePath =
+            `gallery/${fileName}`;
+
+
+        const {
+            error: uploadError
+        } = await supabaseClient
+            .storage
+            .from("gallery")
+            .upload(
+                filePath,
+                file,
+                {
+                    cacheControl: "3600",
+                    upsert: false
+                }
+            );
+
+
+        if (uploadError) {
+
+            console.error(
+                "Gallery upload error:",
+                uploadError
+            );
+
+            message.textContent =
+                "❌ فشل رفع الصورة";
+
+            message.style.color =
+                "#ff7777";
+
+            return;
+        }
+
+
+        const {
+            data: publicUrlData
+        } =
+            supabaseClient
+                .storage
+                .from("gallery")
+                .getPublicUrl(
+                    filePath
+                );
+
+
+        const imageUrl =
+            publicUrlData.publicUrl;
+
+
+        const {
+            error
+        } = await supabaseClient
+            .from("gallery")
+            .insert([{
+
+                restaurant_id:
+                    currentRestaurant.id,
+
+                image_url:
+                    imageUrl,
+
+                title:
+                    title || null,
+
+                sort_order:
+                    0,
+
+                is_active:
+                    true
+
+            }]);
+
+
+        if (error) {
+
+            console.error(
+                "Add gallery error:",
+                error
+            );
+
+            message.textContent =
+                "❌ تم رفع الصورة لكن فشل حفظها";
+
+            message.style.color =
+                "#ff7777";
+
+            return;
+        }
+
+
+        imageInput.value = "";
+        titleInput.value = "";
+
+
+        message.textContent =
+            "✅ تمت إضافة الصورة بنجاح";
+
+        message.style.color =
+            "#7ee787";
+
+
+        await loadGalleryAdmin();
+
+
+    } catch (error) {
 
         console.error(
-            "Add gallery error:",
+            "Gallery error:",
             error
         );
 
         message.textContent =
-            "❌ حدث خطأ أثناء إضافة الصورة";
+            "❌ حدث خطأ أثناء رفع الصورة";
 
         message.style.color =
             "#ff7777";
-
-        return;
     }
-
-
-    imageInput.value = "";
-    titleInput.value = "";
-
-
-    message.textContent =
-        "✅ تمت إضافة الصورة بنجاح";
-
-    message.style.color =
-        "#7ee787";
-
-
-    await loadGalleryAdmin();
-
 }
 
 
